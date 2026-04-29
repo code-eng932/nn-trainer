@@ -192,7 +192,8 @@ def train_model(X_train, y_train, hidden_neurons, optimizer, lr, epochs):
     for epoch in range(1, epochs + 1):
         model.fit(X_train_sc, y_train)
         loss_curve.append(model.loss_)
-        progress.progress(epoch / epochs, text=f"Epoch {epoch}/{epochs}  —  loss: {model.loss_:.4f}")
+        progress.progress(
+            epoch / epochs, text=f"Epoch {epoch}/{epochs}  —  loss: {model.loss_:.4f}")
 
     progress.empty()
     return model, scaler, loss_curve
@@ -201,11 +202,12 @@ def train_model(X_train, y_train, hidden_neurons, optimizer, lr, epochs):
 def evaluate_model(model, scaler, X_test, y_test, class_names):
     X_test_sc = scaler.transform(X_test)
     y_pred = model.predict(X_test_sc)
-    acc  = accuracy_score(y_test, y_pred)
+    acc = accuracy_score(y_test, y_pred)
     prec = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-    f1   = f1_score(y_test, y_pred, average="weighted", zero_division=0)
-    cm   = confusion_matrix(y_test, y_pred)
-    report = classification_report(y_test, y_pred, target_names=class_names, zero_division=0)
+    f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
+    cm = confusion_matrix(y_test, y_pred)
+    report = classification_report(
+        y_test, y_pred, target_names=class_names, zero_division=0)
     return y_pred, acc, prec, f1, cm, report
 
 
@@ -252,10 +254,46 @@ def plot_data_preview(X, y, class_names, feature_names):
                    linewidth=0.4, s=40)
     ax.set_xlabel(feature_names[0], fontsize=10)
     ax.set_ylabel(feature_names[1], fontsize=10)
-    ax.set_title("Dataset Preview (first 2 features)", fontsize=11, fontweight="bold")
+    ax.set_title("Dataset Preview (first 2 features)",
+                 fontsize=11, fontweight="bold")
     ax.spines[["top", "right"]].set_visible(False)
     ax.legend(fontsize=9)
     fig.tight_layout()
+    return fig
+
+
+def plot_decision_boundary(model, scaler, X, y, class_names):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    X_scaled = scaler.transform(X)
+
+    x_min, x_max = X_scaled[:, 0].min() - 1, X_scaled[:, 0].max() + 1
+    y_min, y_max = X_scaled[:, 1].min() - 1, X_scaled[:, 1].max() + 1
+
+    xx, yy = np.meshgrid(
+        np.linspace(x_min, x_max, 300),
+        np.linspace(y_min, y_max, 300)
+    )
+
+    grid = np.c_[xx.ravel(), yy.ravel()]
+
+    Z = model.predict(grid)
+    Z = Z.reshape(xx.shape)
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    ax.contourf(xx, yy, Z, alpha=0.3)
+
+    ax.scatter(
+        X_scaled[:, 0],
+        X_scaled[:, 1],
+        c=y,
+        edgecolor="k"
+    )
+
+    ax.set_title("Decision Boundary")
+
     return fig
 
 
@@ -286,7 +324,8 @@ with st.sidebar:
 
 # ── Main Area ──────────────────────────────────────────────────────────────────
 
-st.markdown('<p class="main-title">🧠 Neural Network Trainer</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🧠 Neural Network Trainer</p>',
+            unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Train, evaluate, and visualize a neural network — no code required.</p>',
             unsafe_allow_html=True)
 
@@ -299,7 +338,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 col_info, col_preview = st.columns([1, 1], gap="large")
 
 with col_info:
-    st.markdown('<p class="section-header">📊 Dataset Info</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-header">📊 Dataset Info</p>',
+                unsafe_allow_html=True)
     st.markdown(f"""
     <div class="info-box">
         <b>{dataset_label}</b><br>
@@ -311,7 +351,8 @@ with col_info:
     """, unsafe_allow_html=True)
 
     st.markdown("**Classes:**")
-    chips = "".join(f'<span class="dataset-chip">{c}</span>' for c in class_names)
+    chips = "".join(
+        f'<span class="dataset-chip">{c}</span>' for c in class_names)
     st.markdown(chips, unsafe_allow_html=True)
 
     st.markdown("<br>**Selected Parameters:**", unsafe_allow_html=True)
@@ -322,7 +363,8 @@ with col_info:
     st.dataframe(params_df, hide_index=True, use_container_width=True)
 
 with col_preview:
-    st.markdown('<p class="section-header">🔍 Data Preview</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-header">🔍 Data Preview</p>',
+                unsafe_allow_html=True)
     st.pyplot(plot_data_preview(X, y, class_names, feature_names))
 
 st.markdown("---")
@@ -330,7 +372,8 @@ st.markdown("---")
 # ── Training Section ───────────────────────────────────────────────────────────
 
 if run_btn:
-    st.markdown('<p class="section-header">⚙️ Training…</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-header">⚙️ Training…</p>',
+                unsafe_allow_html=True)
 
     model, scaler, loss_curve = train_model(
         X_train, y_train,
@@ -345,7 +388,8 @@ if run_btn:
     )
 
     # ── Metrics ──
-    st.markdown('<p class="section-header">📈 Results</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-header">📈 Results</p>',
+                unsafe_allow_html=True)
 
     m1, m2, m3 = st.columns(3, gap="medium")
     with m1:
@@ -372,15 +416,18 @@ if run_btn:
     # ── Plots ──
     col_loss, col_cm = st.columns(2, gap="large")
     with col_loss:
-        st.markdown('<p class="section-header">📉 Training Curve</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-header">📉 Training Curve</p>',
+                    unsafe_allow_html=True)
         st.pyplot(plot_loss_curve(loss_curve))
 
     with col_cm:
-        st.markdown('<p class="section-header">🗂 Confusion Matrix</p>', unsafe_allow_html=True)
+        st.markdown('<p class="section-header">🗂 Confusion Matrix</p>',
+                    unsafe_allow_html=True)
         st.pyplot(plot_confusion_matrix(cm, class_names))
 
     # ── Classification Report ──
-    st.markdown('<p class="section-header">📋 Full Classification Report</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-header">📋 Full Classification Report</p>',
+                unsafe_allow_html=True)
     st.code(report, language="text")
 
     # ── Test sample preview ──
@@ -392,6 +439,14 @@ if run_btn:
         "Correct?":   ["✅" if t == p else "❌" for t, p in zip(y_test[:20], y_pred[:20])],
     })
     st.dataframe(results_df, use_container_width=True, hide_index=True)
+
+        # ── Decision Boundary ──
+    st.markdown('<p class="section-header">🧭 Decision Boundary</p>', unsafe_allow_html=True)
+
+    if X.shape[1] == 2:
+        fig = plot_decision_boundary(
+            model, scaler, X_test[:, :2], y_test, class_names)
+        st.pyplot(fig)
 
 else:
     st.markdown("""
